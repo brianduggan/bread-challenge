@@ -45,6 +45,16 @@ var billingContact = {
 }
 var customStyle = '.bread-embed,body,html{margin:0;padding:0;position:absolute;top:0;right:0;bottom:0;left:0;font-family:sans-serif}.bread-embed{visibility:hidden}.bread-btn{border:2px solid #055170;border-radius:8px;background:#fff;font-size:13px;color:red;cursor:pointer}.bread-btn .bread-embed-inner{position:absolute;top:0;left:0;right:50px;bottom:0;padding:0 1em}.bread-btn .bread-embed-icon{position:absolute;top:-1px;right:-51px;bottom:-1px;left:100%;margin-left:-50px;margin-right:50px;background-color:#055170;background-repeat:no-repeat;background-image:url(assets/coin.png);background-position:center;background-size:auto 30px;border-radius:0 4px 4px 0;cursor:pointer}.bread-btn .bread-pot:before{content:"Pay over time";color:red}.bread-dur{text-transform:uppercase}.bread-as-low-as .bread-as-low-as-info{z-index:1000;font-size:1.25em;font-weight:700;padding:3px}.bread-btn.bread-as-low-as .bread-as-low-as:before,.bread-label .bread-as-low-as:before{content:"as low as";color:red;}.bread-btn.bread-show-terms .bread-for:before,.bread-label .bread-for:before{content:"for";color:#000;margin-right:.5em}.bread-btn.bread-show-terms .bread-for:before,.bread-btn.bread-show-terms .bread-pot:before{color:red}.bread-center{text-align:center;vertical-align:middle;height:100%;width:100%;display:table}.bread-center-inner{display:table-cell;vertical-align:middle}.bread-label{color:#000;text-align:center}.bread-label .bread-embed-inner{display:inline-block;vertical-align:middle;height:100%}.bread-label .bread-embed-icon{vertical-align:middle;display:inline-block;background:#ef8919;border-radius:100%;width:1.25em;height:1.25em;color:#fff;line-height:1.5em;font-size:.85em;margin-top:-.2em}.bread-label .bread-embed-icon:after{content:"i"}@media only screen and (-webkit-min-device-pixel-ratio:2),only screen and (min-device-pixel-ratio:2),only screen and (min-resolution:192dpi),only screen and (min-resolution:2dppx){.bread-btn .bread-embed-icon{background-image:url(assets/coin.svg)}}';
 
+function calculateTotal(){
+  var total = 0;
+  opts.items.forEach(function(product){
+    if (product.quantity){
+      total += (product.price * product.quantity);
+    }
+  })
+  return total;
+}
+
 var opts = {
   buttonId: 'bread-checkout-btn',
   actAsLabel: false,
@@ -56,12 +66,8 @@ var opts = {
   shippingContact: shippingContact,
   calculateTax: function(shippingContact, callback){
     // Return the tax total (as an integer in cents) or an error through the callback.
-    var total = 0;
-    products.forEach(function(product){
-      if (product.quantity){
-        total += (product.price * product.quantity);
-      }
-    })
+    // I was thinking there must be a way to access the total value since it exists on the Bread page but didn't find where that was stored
+    var total = calculateTotal();
     // I hard coded the shipping and billing contacts in this file. In order to test tax values, one must change the shippingContact variable above or the expression below.
     var taxTotal = shippingContact.state === 'NY' ? (total * nyTax) : 0;
     //      (err, tax)
@@ -102,7 +108,7 @@ var opts = {
     }
     console.log(data);
     // Normally this would then be saved to db...
-    // $.post('/customer-close', data, function(err,res){});
+    // $.post('/customer-close', data).done(function(res){}).etc...;
   },
   done: function(err, tx_token) {
     if (err) {
